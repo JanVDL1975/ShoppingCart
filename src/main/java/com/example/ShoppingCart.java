@@ -17,6 +17,11 @@ import org.json.JSONObject;
 public class ShoppingCart {
     private static final String BASE_URL = "https://equalexperts.github.io/backend-take-home-test-data/";
     private static final BigDecimal TAX_RATE = new BigDecimal("0.125");
+    private final String[] validProducts = {"cheerios",
+            "cornflakes",
+            "frosties",
+            "shreddies",
+            "weetabix"};
 
     // Store item and number of the specific item.
     private Map<String, Integer> cart = new HashMap<>();
@@ -36,6 +41,21 @@ public class ShoppingCart {
      * @throws IOException If there's an issue with the API request.
      */
     public BigDecimal fetchPrice(String productName) throws IOException {
+        boolean validName = false;
+
+        for(String name:validProducts) {
+
+
+            if(productName.toLowerCase().compareTo(name) == 0) {
+                validName = true;
+                break;
+            }
+        }
+
+        if(!validName) {
+            throw  new IllegalArgumentException();
+        }
+
         String urlString = BASE_URL + productName + ".json";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -66,8 +86,29 @@ public class ShoppingCart {
      * @throws IOException If there's an issue fetching the price from the API.
      */
     public void addProduct(String productName, int quantity) throws IOException {
+        boolean validName = false;
+
+        // Empty product name should not be allowed.
         if(productName.isEmpty()){
            throw  new IllegalArgumentException();
+        }
+
+        // This is debateable - should 0 be allowed or not? It would work probably - simply zero times price.
+        if(quantity <= 0) {
+           throw  new IllegalArgumentException();
+        }
+
+        for(String name:validProducts) {
+
+
+            if(productName.toLowerCase().compareTo(name) == 0) {
+                validName = true;
+                break;
+            }
+        }
+
+        if(!validName) {
+            throw  new IllegalArgumentException();
         }
 
         // Add the product to the cart

@@ -27,7 +27,7 @@ class ShoppingCartTest {
     }
 
     @Test
-    public void testAddInvalidProductToCart() throws IOException {
+    public void testAddNoNameProductToCart() throws IOException {
         ShoppingCart cart = new ShoppingCart();
 
         // Expect an exception when adding an invalid product
@@ -39,5 +39,36 @@ class ShoppingCartTest {
         boolean val = cart.checkIfProductExists("");
         assertFalse(val); // Assuming checkIfProductExists returns false for non-existing products
     }
+
+    @Test
+    public void testAddInvalidQuantityProductToCart() throws IOException {
+        ShoppingCart cart = new ShoppingCart();
+
+        // Expect an exception when adding an invalid product
+        assertThrows(IllegalArgumentException.class, () -> {
+            cart.addProduct("cheerios", -1);
+        });
+    }
+
+    @Test
+    public void testAddProductNotInAvialableListToCart() throws IOException {
+        ShoppingCart cart = new ShoppingCart();
+
+        // Expect an exception when adding an invalid product
+        assertThrows(IllegalArgumentException.class, () -> {
+            cart.addProduct("cheeri", 1);
+        });
+    }
+
+    @Test
+    public void testFetchProductPriceNotAvailableCart() throws IOException {
+        ShoppingCart cart = new ShoppingCart();
+
+        // Expect an exception when adding an invalid product
+        assertThrows(IllegalArgumentException.class, () -> {
+            cart.addProduct("cheeri", 1);
+        });
+    }
+
 }
 
