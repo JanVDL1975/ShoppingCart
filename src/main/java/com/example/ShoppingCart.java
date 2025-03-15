@@ -46,40 +46,37 @@ public class ShoppingCart {
      * @throws IOException If there's an issue with the API request.
      */
     public BigDecimal fetchPrice(String productName) throws IOException {
-        boolean validName = false;
-
-        for(String name:validProducts) {
-
-
-            if(productName.toLowerCase().compareTo(name) == 0) {
-                validName = true;
-                break;
-            }
-        }
-
-        if(!validName) {
-            throw  new IllegalArgumentException();
-        }
-
         String urlString = BASE_URL + productName + ".json";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
 
         int responseCode = conn.getResponseCode();
-        if (responseCode != 200) {
-            throw new IOException("Failed to fetch price for " + productName);
-        }
 
-        Scanner scanner = new Scanner(url.openStream());
-        StringBuilder inline = new StringBuilder();
-        while (scanner.hasNext()) {
-            inline.append(scanner.nextLine());
-        }
-        scanner.close();
+        switch (responseCode) {
+            case 200:
+                Scanner scanner = new Scanner(url.openStream());
+                StringBuilder inline = new StringBuilder();
+                while (scanner.hasNext()) {
+                    inline.append(scanner.nextLine());
+                }
+                scanner.close();
 
-        JSONObject jsonObject = new JSONObject(inline.toString());
-        return jsonObject.getBigDecimal("price");
+                JSONObject jsonObject = new JSONObject(inline.toString());
+                return jsonObject.getBigDecimal("price");
+
+            case 404:
+                throw new IOException("Error 404: Product not found - " + productName);
+
+            case 500:
+                throw new IOException("Error 500: Internal Server Error");
+
+            case 503:
+                throw new IOException("Error 503: Service Unavailable");
+
+            default:
+                throw new IOException("Unexpected API error: " + responseCode);
+        }
     }
 
     /**
