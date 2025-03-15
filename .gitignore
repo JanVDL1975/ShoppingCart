@@ -1,29 +1,33 @@
-### IntelliJ IDEA ###
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+# Ignore Gradle build files
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# Ignore build directories
+build/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Ignore test reports
+build/reports/
+build/test-results/
+build/tmp/
 
-### VS Code ###
-.vscode/
+# Ignore compiled class files
+*.class
 
-### Mac OS ###
+# Ignore execution history and file hashes
+.gradle/**/executionHistory/*
+.gradle/**/fileHashes/*
+.gradle/**/buildOutputCleanup/*
+.gradle/file-system.probe
+
+# Ignore IDE-specific files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Ignore OS-specific files
 .DS_Store
+Thumbs.db
+
+# Keep README.md
+!README.md
