@@ -4,12 +4,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 
 class ShoppingCartTest {
     private ShoppingCart cart;
@@ -314,6 +318,97 @@ class ShoppingCartTest {
         assertTrue(output.contains("Subtotal = 10.06"), "Subtotal should be rounded up.");
         assertTrue(output.contains("Tax = 1.01"), "Tax should be rounded up.");
         assertTrue(output.contains("Total = 11.07"), "Total should be correctly printed.");
+    }
+
+    @Mock
+    private HttpURLConnection mockConnection;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        cart = new ShoppingCart();
+    }
+
+    @Test
+    void testFetchPrice_Success() throws Exception {
+        // Mocking a successful response
+        BigDecimal expectedPrice = new BigDecimal("2.52");
+        ShoppingCart priceServiceSpy = spy(cart);
+
+        doReturn(expectedPrice).when(priceServiceSpy).fetchPrice("cornflakes");
+
+        BigDecimal actualPrice = priceServiceSpy.fetchPrice("cornflakes");
+        assertEquals(expectedPrice, actualPrice);
+    }
+
+    @Test
+    void testFetchPrice_ProductNotFound() {
+        ShoppingCart priceServiceSpy = spy(cart);
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            doThrow(new IOException("Error 404: Product not found - invalid_product"))
+                    .when(priceServiceSpy).fetchPrice("invalid_product");
+
+            priceServiceSpy.fetchPrice("invalid_product");
+        });
+
+        assertTrue(exception.getMessage().contains("Error 404"));
+    }
+
+    @Test
+    void testFetchPrice_InternalServerError() {
+        ShoppingCart priceServiceSpy = spy(cart);
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            doThrow(new IOException("Error 500: Internal Server Error"))
+                    .when(priceServiceSpy).fetchPrice("frosties");
+
+            priceServiceSpy.fetchPrice("frosties");
+        });
+
+        assertTrue(exception.getMessage().contains("Error 500"));
+    }
+
+    @Test
+    void testFetchPrice_ServiceUnavailable() {
+        ShoppingCart priceServiceSpy = spy(cart);
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            doThrow(new IOException("Error 503: Service Unavailable"))
+                    .when(priceServiceSpy).fetchPrice("weetabix");
+
+            priceServiceSpy.fetchPrice("weetabix");
+        });
+
+        assertTrue(exception.getMessage().contains("Error 503"));
+    }
+
+    @Test
+    void testFetchPrice_UnexpectedError() {
+        ShoppingCart priceServiceSpy = spy(cart);
+
+        Exception exception = assertThrows(IOException.class, () -> {
+            doThrow(new IOException("Unexpected API error: 403"))
+                    .when(priceServiceSpy).fetchPrice("shreddies");
+
+            priceServiceSpy.fetchPrice("shreddies");
+        });
+
+        assertTrue(exception.getMessage().contains("Unexpected API error"));
+    }
+
+    @Test
+    void testFetchPrice_Timeout() {
+        ShoppingCart priceServiceSpy = spy(cart);
+
+        Exception exception = assertThrows(SocketTimeoutException.class, () -> {
+            doThrow(new SocketTimeoutException("Connection timed out"))
+                    .when(priceServiceSpy).fetchPrice("cornflakes");
+
+            priceServiceSpy.fetchPrice("cornflakes");
+        });
+
+        assertTrue(exception.getMessage().contains("Connection timed out"));
     }
 }
 

@@ -27,6 +27,8 @@ public class ShoppingCart {
 
     /*There is a reasanable number of possible items that one could buy - for testability I am making it this value*/
     private final int MAX_POSSIBLE_NUM_ITEMS = 1000000;
+    private static final int CONNECTION_TIMEOUT = 5000; // 5 seconds
+    private static final int READ_TIMEOUT = 5000;       // 5 seconds
 
     // Store item and number of the specific item.
     private Map<String, Integer> cart = new HashMap<>();
@@ -49,6 +51,10 @@ public class ShoppingCart {
         String urlString = BASE_URL + productName + ".json";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        // Set timeouts
+        conn.setConnectTimeout(CONNECTION_TIMEOUT);
+        conn.setReadTimeout(READ_TIMEOUT);
         conn.setRequestMethod("GET");
 
         int responseCode = conn.getResponseCode();
