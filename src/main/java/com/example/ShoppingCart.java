@@ -1,0 +1,82 @@
+package com.example;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import org.json.JSONObject;
+
+
+/**
+ * Represents a simple shopping cart that allows adding products,
+ * fetching their prices from an external API, and calculating totals.
+ */
+public class ShoppingCart {
+    private static final String BASE_URL = "https://equalexperts.github.io/backend-take-home-test-data/";
+    private static final BigDecimal TAX_RATE = new BigDecimal("0.125");
+
+    // Store item and number of the specific item.
+    private static final Map<String, Integer> cart = new HashMap<>();
+
+    // Store the price for the item - don't want to make unnecessary calls to the API!
+    private static final Map<String, BigDecimal> priceCache = new HashMap<>();
+
+    /**
+     * Fetches the price of a product from the external API.
+     *
+     * @param productName The name of the product.
+     * @return The price of the product as a BigDecimal.
+     * @throws IOException If there's an issue with the API request.
+     */
+    public static BigDecimal fetchPrice(String productName) throws IOException {
+        String urlString = BASE_URL + productName + ".json";
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode != 200) {
+            throw new IOException("Failed to fetch price for " + productName);
+        }
+
+        Scanner scanner = new Scanner(url.openStream());
+        StringBuilder inline = new StringBuilder();
+        while (scanner.hasNext()) {
+            inline.append(scanner.nextLine());
+        }
+        scanner.close();
+
+        JSONObject jsonObject = new JSONObject(inline.toString());
+        return jsonObject.getBigDecimal("price");
+    }
+
+    /**
+     * Adds a product to the cart.
+     * If the product is not in the cart, it fetches the price from the API.
+     *
+     * @param productName The name of the product.
+     * @param quantity The quantity of the product to add.
+     * @throws IOException If there's an issue fetching the price from the API.
+     */
+    public static void addProduct(String productName, int quantity) throws IOException {
+        if (!cart.containsKey(productName)) {
+            cart.put(productName, 0);
+        }
+        cart.put(productName, cart.get(productName) + quantity);
+
+        if (!priceCache.containsKey(productName)) {
+            BigDecimal price = fetchPrice(productName);
+            priceCache.put(productName, price);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        String[] products = {"cheerios","cornflakes","frosties", "shreddies", "weetabix"};
+        for(String product:products) {
+            addProduct(product, 1);
+        }
+    }
+}
