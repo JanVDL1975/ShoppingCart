@@ -80,5 +80,52 @@ class ShoppingCartTest {
         });
     }
 
+    @Test
+    public void testGetSubtotal_EmptyCart() {
+        ShoppingCart cart = new ShoppingCart();
+
+        assertEquals(BigDecimal.ZERO, cart.getSubtotal(), "Subtotal should be zero for an empty cart");
+    }
+
+    @Test
+    public void testGetSubtotal_SingleProduct() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+
+        assertEquals(new BigDecimal("6.00"), cart.getSubtotal(), "Subtotal should be 6.00 for 2 Apples at 3.00 each");
+    }
+
+    @Test
+    public void testGetSubtotal_MultipleProducts() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getCart().put("Banana", 3);
+
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+        cart.getPriceCache().put("Banana", new BigDecimal("2.00"));
+
+        assertEquals(new BigDecimal("12.00"), cart.getSubtotal(), "Subtotal should be 12.00 for multiple products");
+    }
+
+    @Test
+    public void testGetSubtotal_ProductWithoutPrice() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2); // Apple added to cart
+        // Price cache is empty or missing Apple
+
+        assertThrows(NullPointerException.class, cart::getSubtotal, "Should throw an exception when a product has no price");
+    }
+
+    @Test
+    public void testGetSubtotal_LargeNumbers() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Laptop", 1000);
+        cart.getPriceCache().put("Laptop", new BigDecimal("999.99"));
+
+        assertEquals(new BigDecimal("999990.00"), cart.getSubtotal(), "Subtotal should be correct for large numbers");
+    }
+
+
 }
 
