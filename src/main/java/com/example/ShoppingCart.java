@@ -19,10 +19,14 @@ public class ShoppingCart {
     private static final BigDecimal TAX_RATE = new BigDecimal("0.125");
 
     // Store item and number of the specific item.
-    private static final Map<String, Integer> cart = new HashMap<>();
+    private Map<String, Integer> cart = new HashMap<>();
 
     // Store the price for the item - don't want to make unnecessary calls to the API!
-    private static final Map<String, BigDecimal> priceCache = new HashMap<>();
+    private Map<String, BigDecimal> priceCache = new HashMap<>();
+
+    public ShoppingCart() {
+        // Constructor
+    }
 
     /**
      * Fetches the price of a product from the external API.
@@ -31,7 +35,7 @@ public class ShoppingCart {
      * @return The price of the product as a BigDecimal.
      * @throws IOException If there's an issue with the API request.
      */
-    public static BigDecimal fetchPrice(String productName) throws IOException {
+    public BigDecimal fetchPrice(String productName) throws IOException {
         String urlString = BASE_URL + productName + ".json";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -58,25 +62,49 @@ public class ShoppingCart {
      * If the product is not in the cart, it fetches the price from the API.
      *
      * @param productName The name of the product.
-     * @param quantity The quantity of the product to add.
+     * @param quantity    The quantity of the product to add.
      * @throws IOException If there's an issue fetching the price from the API.
      */
-    public static void addProduct(String productName, int quantity) throws IOException {
-        if (!cart.containsKey(productName)) {
-            cart.put(productName, 0);
-        }
-        cart.put(productName, cart.get(productName) + quantity);
+    public void addProduct(String productName, int quantity) throws IOException {
+        // Add the product to the cart
+        cart.put(productName, cart.getOrDefault(productName, 0) + quantity);
 
+        // Fetch the price and store it in the priceCache
         if (!priceCache.containsKey(productName)) {
             BigDecimal price = fetchPrice(productName);
             priceCache.put(productName, price);
         }
     }
 
+    public Map<String, Integer> getCart() {
+        return cart;
+    }
+
+    public Map<String, BigDecimal> getPriceCache() {
+        return priceCache;
+    }
+
     public static void main(String[] args) throws IOException {
-        String[] products = {"cheerios","cornflakes","frosties", "shreddies", "weetabix"};
-        for(String product:products) {
-            addProduct(product, 1);
+        String[] products = {"cheerios", "cornflakes", "frosties", "shreddies", "weetabix"};
+        ShoppingCart cart = new ShoppingCart();
+
+        // Add products to the cart
+        for (String product : products) {
+            cart.addProduct(product, 1);
         }
+
+        // Display the cart contents
+        System.out.println("Cart: " + cart.getCart());
+        System.out.println("Price Cache: " + cart.getPriceCache());
+    }
+
+    /**
+     * Gets the quantity of a specific product from the cart.
+     *
+     * @param productName The name of the product.
+     * @return The quantity of the product, or 0 if the product is not in the cart.
+     */
+    public int getProductQuantity(String productName) {
+        return cart.getOrDefault(productName, 0); // Returns 0 if productName is not found
     }
 }

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.example.CalculatorTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-03-15T10:13:33" hostname="DESKTOP-2BTJLBE" time="0.017">
-  <properties/>
-  <testcase name="testAdd()" classname="com.example.CalculatorTest" time="0.015"/>
-  <testcase name="testSubtract()" classname="com.example.CalculatorTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

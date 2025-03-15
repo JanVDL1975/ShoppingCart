@@ -1,28 +1,30 @@
 package com.example;
 
-import com.example.ShoppingCart;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
 import java.math.BigDecimal;
 import java.io.IOException;
-
-import static org.mockito.Mockito.*;
 
 class ShoppingCartTest {
     private ShoppingCart cart;
     private ShoppingCart spyCart;
 
-    @BeforeEach
-    void setUp() throws IOException {
-        cart = new ShoppingCart();
-        spyCart = Mockito.spy(cart);
+    @Test
+    public void testAddProductToCart() throws IOException {
+        ShoppingCart cart = new ShoppingCart();
 
-        // Mock API responses for known products
-        doReturn(new BigDecimal("2.52")).when(spyCart);
-        ShoppingCart.fetchPrice("cornflakes");
-        doReturn(new BigDecimal("9.98")).when(spyCart);
-        ShoppingCart.fetchPrice("weetabix");
-        doReturn(new BigDecimal("3.75")).when(spyCart);
-        ShoppingCart.fetchPrice("shreddies");
+        cart.addProduct("cheerios", 1);
+        cart.addProduct("cornflakes", 2);
+
+        // Check the quantities of products in the cart
+        assertEquals(1, cart.getProductQuantity("cheerios"));
+        assertEquals(2, cart.getProductQuantity("cornflakes"));
+        assertEquals(0, cart.getProductQuantity("frosties")); // This product hasn't been added yet
     }
 }
+
