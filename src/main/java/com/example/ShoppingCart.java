@@ -190,6 +190,25 @@ public class ShoppingCart {
         return getSubtotal().multiply(TAX_RATE).setScale(2, RoundingMode.UP);
     }
 
+    /**
+     * Calculates the total payable amount (subtotal + tax).
+     *
+     * @return The total amount as a BigDecimal.
+     */
+    public BigDecimal getTotal() {
+        return getSubtotal().add(getTax());
+    }
+
+    /**
+     * Prints the cart contents and the calculated totals (subtotal, tax, total).
+     */
+    public void printCart() {
+        cart.forEach((product, quantity) -> System.out.println("Cart contains " + quantity + " x " + product));
+        System.out.println("Subtotal = " + getSubtotal());
+        System.out.println("Tax = " + getTax());
+        System.out.println("Total = " + getTotal());
+    }
+
 
     public static void main(String[] args) throws IOException {
         String[] products = {"cheerios", "cornflakes", "frosties", "shreddies", "weetabix"};
@@ -200,6 +219,9 @@ public class ShoppingCart {
         System.out.println("The subtotal is: " + subTotal);
 
         BigDecimal tax = cart.getTax();
+        System.out.println("The tax is: " + tax);
+
+        BigDecimal total = cart.getTotal();
         System.out.println("The tax is: " + tax);
 
         // Add products to the cart

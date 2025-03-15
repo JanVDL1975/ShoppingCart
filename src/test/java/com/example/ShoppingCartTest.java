@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.io.IOException;
 
@@ -176,6 +178,142 @@ class ShoppingCartTest {
 
         BigDecimal expectedTax = new BigDecimal("99999.00");
         assertEquals(expectedTax, cart.getTax(), "Tax should be correct for large subtotals");
+    }
+
+    @Test
+    public void testGetTotal_EmptyCart() {
+        ShoppingCart cart = new ShoppingCart();
+
+        assertEquals(BigDecimal.ZERO, cart.getTotal(), "Total should be zero for an empty cart");
+    }
+
+    @Test
+    public void testGetTotal_SingleProduct() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+
+        BigDecimal expectedTotal = new BigDecimal("6.60"); // 6.00 + 0.60
+        assertEquals(expectedTotal, cart.getTotal(), "Total should be 6.60 for a 6.00 subtotal at 10% tax");
+    }
+
+    @Test
+    public void testGetTotal_MultipleProducts() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getCart().put("Banana", 3);
+
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+        cart.getPriceCache().put("Banana", new BigDecimal("2.00"));
+
+        BigDecimal expectedTotal = new BigDecimal("13.20");
+        assertEquals(expectedTotal, cart.getTotal(), "Total should be 13.20 for a 12.00 subtotal at 10% tax");
+    }
+
+
+    @Test
+    public void testGetTotal_RoundingUp() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("ItemX", 1);
+        cart.getPriceCache().put("ItemX", new BigDecimal("10.055"));
+
+        BigDecimal expectedTotal = new BigDecimal("11.07"); // Rounded up tax affects total
+        assertEquals(expectedTotal, cart.getTotal(), "Total should be 11.07 for subtotal 10.055 at 10% tax");
+    }
+
+    @Test
+    public void testGetTotal_LargeNumbers() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Laptop", 1000);
+        cart.getPriceCache().put("Laptop", new BigDecimal("999.99"));
+
+        BigDecimal expectedTotal = new BigDecimal("1099989.00");
+        assertEquals(expectedTotal, cart.getTotal(), "Total should be correct for large subtotals");
+    }
+
+    @Test
+    public void testPrintCart_EmptyCart() {
+        ShoppingCart cart = new ShoppingCart();
+
+        // Capture the console output
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
+
+        cart.printCart();
+
+        // Restore original System.out
+        System.setOut(originalOut);
+
+        // Check expected output
+        String expectedOutput = "Subtotal = 0.00\nTax = 0.00\nTotal = 0.00\n";
+        assertTrue(outputStream.toString().contains(expectedOutput), "Output should match expected for an empty cart.");
+    }
+
+    @Test
+    public void testPrintCart_SingleProduct() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
+
+        cart.printCart();
+
+        System.setOut(originalOut);
+
+        String output = outputStream.toString();
+        assertTrue(output.contains("Cart contains 2 x Apple"), "Output should list 'Apple' with correct quantity.");
+        assertTrue(output.contains("Subtotal = 6.00"), "Subtotal should be correctly printed.");
+        assertTrue(output.contains("Tax = 0.60"), "Tax should be correctly printed.");
+        assertTrue(output.contains("Total = 6.60"), "Total should be correctly printed.");
+    }
+
+    @Test
+    public void testPrintCart_MultipleProducts() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getCart().put("Banana", 3);
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+        cart.getPriceCache().put("Banana", new BigDecimal("2.00"));
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
+
+        cart.printCart();
+
+        System.setOut(originalOut);
+
+        String output = outputStream.toString();
+        assertTrue(output.contains("Cart contains 2 x Apple"), "Apple should be listed.");
+        assertTrue(output.contains("Cart contains 3 x Banana"), "Banana should be listed.");
+        assertTrue(output.contains("Subtotal = 12.00"), "Subtotal should be correct.");
+        assertTrue(output.contains("Tax = 1.20"), "Tax should be correct.");
+        assertTrue(output.contains("Total = 13.20"), "Total should be correct.");
+    }
+
+    @Test
+    public void testPrintCart_Rounding() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("ItemX", 1);
+        cart.getPriceCache().put("ItemX", new BigDecimal("10.055"));
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
+
+        cart.printCart();
+
+        System.setOut(originalOut);
+
+        String output = outputStream.toString();
+        assertTrue(output.contains("Cart contains 1 x ItemX"), "ItemX should be listed.");
+        assertTrue(output.contains("Subtotal = 10.06"), "Subtotal should be rounded up.");
+        assertTrue(output.contains("Tax = 1.01"), "Tax should be rounded up.");
+        assertTrue(output.contains("Total = 11.07"), "Total should be correctly printed.");
     }
 }
 
