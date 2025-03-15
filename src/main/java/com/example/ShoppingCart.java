@@ -2,6 +2,7 @@ package com.example;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -179,6 +180,16 @@ public class ShoppingCart {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    /**
+     * Calculates the tax payable (12.5% of the subtotal).
+     * The tax is rounded up to 2 decimal places.
+     *
+     * @return The tax amount as a BigDecimal.
+     */
+    public BigDecimal getTax() {
+        return getSubtotal().multiply(TAX_RATE).setScale(2, RoundingMode.UP);
+    }
+
 
     public static void main(String[] args) throws IOException {
         String[] products = {"cheerios", "cornflakes", "frosties", "shreddies", "weetabix"};
@@ -187,6 +198,9 @@ public class ShoppingCart {
         cart.addProduct("cheerios", 2);
         BigDecimal subTotal = cart.getSubtotal();
         System.out.println("The subtotal is: " + subTotal);
+
+        BigDecimal tax = cart.getTax();
+        System.out.println("The tax is: " + tax);
 
         // Add products to the cart
         for (String product : products) {

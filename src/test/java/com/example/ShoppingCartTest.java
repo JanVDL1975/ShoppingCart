@@ -127,5 +127,55 @@ class ShoppingCartTest {
     }
 
 
+    @Test
+    public void testGetTax_EmptyCart() {
+        ShoppingCart cart = new ShoppingCart();
+
+        assertEquals(BigDecimal.ZERO, cart.getTax(), "Tax should be zero for an empty cart");
+    }
+
+
+    @Test
+    public void testGetTax_SingleProduct() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+
+        BigDecimal expectedTax = new BigDecimal("0.60"); // Assuming TAX_RATE is 10%
+        assertEquals(expectedTax, cart.getTax(), "Tax should be 0.60 for 6.00 subtotal at 10%");
+    }
+
+    @Test
+    public void testGetTax_MultipleProducts() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Apple", 2);
+        cart.getCart().put("Banana", 3);
+
+        cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+        cart.getPriceCache().put("Banana", new BigDecimal("2.00"));
+
+        BigDecimal expectedTax = new BigDecimal("1.20");
+        assertEquals(expectedTax, cart.getTax(), "Tax should be 1.20 for a 12.00 subtotal at 10%");
+    }
+
+    @Test
+    public void testGetTax_RoundingUp() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("ItemX", 1);
+        cart.getPriceCache().put("ItemX", new BigDecimal("10.055"));
+
+        BigDecimal expectedTax = new BigDecimal("1.01"); // Rounded up
+        assertEquals(expectedTax, cart.getTax(), "Tax should round up to 1.01 for subtotal 10.055 at 10%");
+    }
+
+    @Test
+    public void testGetTax_LargeNumbers() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.getCart().put("Laptop", 1000);
+        cart.getPriceCache().put("Laptop", new BigDecimal("999.99"));
+
+        BigDecimal expectedTax = new BigDecimal("99999.00");
+        assertEquals(expectedTax, cart.getTax(), "Tax should be correct for large subtotals");
+    }
 }
 
