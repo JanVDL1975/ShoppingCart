@@ -281,3 +281,12 @@ String product4 = System.getenv("PRODUCT_4");
 String product5 = System.getenv("PRODUCT_5");
 -------------------------------------------------------------------------------------------------------------------------------------------
 # Added first test. 
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+# Design consideration:
+
+Normally one cannot have an unbounded number of items. In order to model this,
+I'm introducing an  artificial limit: MAX_POSSIBLE_NUM_ITEMS
+
+I have decided to create an array for all the possible items: validProducts. In a real world scenario, once could read 
+this from a file too. The MAX_POSSIBLE_NUM_ITEMS could also be defined in the config file. 
