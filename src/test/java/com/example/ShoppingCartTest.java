@@ -1,7 +1,6 @@
 package com.example;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +24,20 @@ class ShoppingCartTest {
         assertEquals(1, cart.getProductQuantity("cheerios"));
         assertEquals(2, cart.getProductQuantity("cornflakes"));
         assertEquals(0, cart.getProductQuantity("frosties")); // This product hasn't been added yet
+    }
+
+    @Test
+    public void testAddInvalidProductToCart() throws IOException {
+        ShoppingCart cart = new ShoppingCart();
+
+        // Expect an exception when adding an invalid product
+        assertThrows(IllegalArgumentException.class, () -> {
+            cart.addProduct("", 1);
+        });
+
+        // Optionally, check the cart's state (ensure product doesn't get added)
+        boolean val = cart.checkIfProductExists("");
+        assertFalse(val); // Assuming checkIfProductExists returns false for non-existing products
     }
 }
 

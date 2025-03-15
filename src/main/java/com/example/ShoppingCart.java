@@ -66,6 +66,10 @@ public class ShoppingCart {
      * @throws IOException If there's an issue fetching the price from the API.
      */
     public void addProduct(String productName, int quantity) throws IOException {
+        if(productName.isEmpty()){
+           throw  new IllegalArgumentException();
+        }
+
         // Add the product to the cart
         cart.put(productName, cart.getOrDefault(productName, 0) + quantity);
 
@@ -106,5 +110,9 @@ public class ShoppingCart {
      */
     public int getProductQuantity(String productName) {
         return cart.getOrDefault(productName, 0); // Returns 0 if productName is not found
+    }
+
+    public boolean checkIfProductExists(String s) {
+        return cart.containsKey(s);
     }
 }
