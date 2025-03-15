@@ -22,6 +22,8 @@ public class ShoppingCart {
             "frosties",
             "shreddies",
             "weetabix"};
+    /*There is a reasanable number of possible items that one could buy - for testability I am making it this value*/
+    private final int MAX_POSSIBLE_NUM_ITEMS = 1000000;
 
     // Store item and number of the specific item.
     private Map<String, Integer> cart = new HashMap<>();
@@ -108,6 +110,10 @@ public class ShoppingCart {
         }
 
         if(!validName) {
+            throw  new IllegalArgumentException();
+        }
+
+        if(quantity > MAX_POSSIBLE_NUM_ITEMS) {
             throw  new IllegalArgumentException();
         }
 

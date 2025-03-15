@@ -70,5 +70,15 @@ class ShoppingCartTest {
         });
     }
 
+    @Test
+    public void testMaxNumberOfAvailableProductsInCart() throws IOException {
+        ShoppingCart cart = new ShoppingCart();
+
+        // Expect an exception when adding an invalid product
+        assertThrows(IllegalArgumentException.class, () -> {
+            cart.addProduct("cheerios", 1000001);
+        });
+    }
+
 }
 
