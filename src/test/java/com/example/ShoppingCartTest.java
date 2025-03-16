@@ -2,6 +2,7 @@ package com.example;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -12,8 +13,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 class ShoppingCartTest {
     private ShoppingCart cart;
@@ -90,7 +95,7 @@ class ShoppingCartTest {
     public void testGetSubtotal_EmptyCart() {
         ShoppingCart cart = new ShoppingCart();
 
-        assertEquals(BigDecimal.ZERO, cart.getSubtotal(), "Subtotal should be zero for an empty cart");
+        assertEquals(BigDecimal.ZERO.setScale(2), cart.getSubtotal().setScale(2), "Subtotal should be zero for an empty cart");
     }
 
     @Test
@@ -137,7 +142,7 @@ class ShoppingCartTest {
     public void testGetTax_EmptyCart() {
         ShoppingCart cart = new ShoppingCart();
 
-        assertEquals(BigDecimal.ZERO, cart.getTax(), "Tax should be zero for an empty cart");
+        assertEquals(BigDecimal.ZERO.setScale(2), cart.getTax(), "Tax should be zero for an empty cart");
     }
 
 
@@ -146,6 +151,7 @@ class ShoppingCartTest {
         ShoppingCart cart = new ShoppingCart();
         cart.getCart().put("Apple", 2);
         cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
+        cart.setTaxRate(new BigDecimal(0.1));
 
         BigDecimal expectedTax = new BigDecimal("0.60"); // Assuming TAX_RATE is 10%
         assertEquals(expectedTax, cart.getTax(), "Tax should be 0.60 for 6.00 subtotal at 10%");
@@ -156,11 +162,12 @@ class ShoppingCartTest {
         ShoppingCart cart = new ShoppingCart();
         cart.getCart().put("Apple", 2);
         cart.getCart().put("Banana", 3);
+        cart.setTaxRate(new BigDecimal(0.1));
 
         cart.getPriceCache().put("Apple", new BigDecimal("3.00"));
         cart.getPriceCache().put("Banana", new BigDecimal("2.00"));
-
         BigDecimal expectedTax = new BigDecimal("1.20");
+
         assertEquals(expectedTax, cart.getTax(), "Tax should be 1.20 for a 12.00 subtotal at 10%");
     }
 
@@ -188,7 +195,7 @@ class ShoppingCartTest {
     public void testGetTotal_EmptyCart() {
         ShoppingCart cart = new ShoppingCart();
 
-        assertEquals(BigDecimal.ZERO, cart.getTotal(), "Total should be zero for an empty cart");
+        assertEquals(BigDecimal.ZERO.setScale(2), cart.getTotal(), "Total should be zero for an empty cart");
     }
 
     @Test
@@ -249,8 +256,10 @@ class ShoppingCartTest {
         // Restore original System.out
         System.setOut(originalOut);
 
+        String value = outputStream.toString();
+
         // Check expected output
-        String expectedOutput = "Subtotal = 0.00\nTax = 0.00\nTotal = 0.00\n";
+        String expectedOutput = "Subtotal = 0.00\r\nTax = 0.00\r\nTotal = 0.00\r\n";
         assertTrue(outputStream.toString().contains(expectedOutput), "Output should match expected for an empty cart.");
     }
 

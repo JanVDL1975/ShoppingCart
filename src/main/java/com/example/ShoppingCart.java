@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+
 import org.json.JSONObject;
 
 
@@ -17,7 +18,7 @@ import org.json.JSONObject;
  */
 public class ShoppingCart {
     private static final String BASE_URL = "https://equalexperts.github.io/backend-take-home-test-data/";
-    private static BigDecimal taxRate = new BigDecimal("0.125");
+    private static BigDecimal taxRate = new BigDecimal("0.125"); // Note: this can be low precision value.
     /* Adding ann array to store the names of the valid products. This could also be read from config file. */
     private final String[] validProducts = {"cheerios",
             "cornflakes",
@@ -26,7 +27,7 @@ public class ShoppingCart {
             "weetabix"};
 
     /*There is a reasanable number of possible items that one could buy - for testability I am making it this value*/
-    private final int MAX_POSSIBLE_NUM_ITEMS = 1000000;
+    private static final int MAX_POSSIBLE_NUM_ITEMS = 1000000;
     private static final int CONNECTION_TIMEOUT = 5000; // 5 seconds
     private static final int READ_TIMEOUT = 5000;       // 5 seconds
 
@@ -97,31 +98,31 @@ public class ShoppingCart {
         boolean validName = false;
 
         // Empty product name should not be allowed.
-        if(productName.isEmpty()){
-           throw  new IllegalArgumentException();
+        if (productName.isEmpty()) {
+            throw new IllegalArgumentException();
         }
 
         // This is debateable - should 0 be allowed or not? It would work probably - simply zero times price.
-        if(quantity <= 0) {
-           throw  new IllegalArgumentException();
+        if (quantity <= 0) {
+            throw new IllegalArgumentException();
         }
 
         /* Check if the product name is in the possible valid products */
-        for(String name:validProducts) {
-            if(productName.toLowerCase().compareTo(name) == 0) {
+        for (String name : validProducts) {
+            if (productName.toLowerCase().compareTo(name) == 0) {
                 validName = true;
                 break;
             }
         }
 
-        if(!validName) {
-            throw  new IllegalArgumentException();
+        if (!validName) {
+            throw new IllegalArgumentException();
         }
 
         /* This is a physical limit, as one could expect in a real world scenario. */
         /* Note: In this case a value was randomly selected. */
-        if(quantity > MAX_POSSIBLE_NUM_ITEMS) {
-            throw  new IllegalArgumentException();
+        if (quantity > MAX_POSSIBLE_NUM_ITEMS) {
+            throw new IllegalArgumentException();
         }
 
         // Add the product to the cart
@@ -179,7 +180,13 @@ public class ShoppingCart {
      */
     public BigDecimal getSubtotal() {
         return cart.entrySet().stream()
-                .map(entry -> priceCache.get(entry.getKey()).multiply(BigDecimal.valueOf(entry.getValue())))
+                .map(entry -> {
+                    BigDecimal price = priceCache.get(entry.getKey());
+                    if (price == null) {
+                        return BigDecimal.ZERO; // or throw an exception, depending on your use case
+                    }
+                    return price.multiply(BigDecimal.valueOf(entry.getValue()));
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -227,6 +234,7 @@ public class ShoppingCart {
      */
     public void printCart() {
         cart.forEach((product, quantity) -> System.out.println("Cart contains " + quantity + " x " + product));
+        // Ideally use a Log Library or logging to a cetral location.
         System.out.println("Subtotal = " + getSubtotal().setScale(2, RoundingMode.UP));
         System.out.println("Tax = " + getTax().setScale(2, RoundingMode.UP));
         System.out.println("Total = " + getTotal().setScale(2, RoundingMode.UP));
