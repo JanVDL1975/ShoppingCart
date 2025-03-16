@@ -17,7 +17,7 @@ import org.json.JSONObject;
  */
 public class ShoppingCart {
     private static final String BASE_URL = "https://equalexperts.github.io/backend-take-home-test-data/";
-    private static final BigDecimal TAX_RATE = new BigDecimal("0.125");
+    private static BigDecimal taxRate = new BigDecimal("0.125");
     /* Adding ann array to store the names of the valid products. This could also be read from config file. */
     private final String[] validProducts = {"cheerios",
             "cornflakes",
@@ -190,7 +190,17 @@ public class ShoppingCart {
      * @return The tax amount as a BigDecimal.
      */
     public BigDecimal getTax() {
-        return getSubtotal().multiply(TAX_RATE).setScale(2, RoundingMode.UP);
+        BigDecimal subtotal = BigDecimal.ZERO;
+
+        for (Map.Entry<String, Integer> entry : cart.entrySet()) {
+            String product = entry.getKey();
+            int quantity = entry.getValue();
+            BigDecimal price = priceCache.getOrDefault(product, BigDecimal.ZERO);
+            subtotal = subtotal.add(price.multiply(BigDecimal.valueOf(quantity)));
+        }
+
+        // Ensure tax is rounded properly
+        return subtotal.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -199,7 +209,17 @@ public class ShoppingCart {
      * @return The total amount as a BigDecimal.
      */
     public BigDecimal getTotal() {
-        return getSubtotal().add(getTax());
+        BigDecimal subtotal = BigDecimal.ZERO;
+
+        for (Map.Entry<String, Integer> entry : cart.entrySet()) {
+            String product = entry.getKey();
+            int quantity = entry.getValue();
+            BigDecimal price = priceCache.getOrDefault(product, BigDecimal.ZERO);
+            subtotal = subtotal.add(price.multiply(BigDecimal.valueOf(quantity)));
+        }
+
+        BigDecimal taxAmount = subtotal.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+        return subtotal.add(taxAmount).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -207,9 +227,13 @@ public class ShoppingCart {
      */
     public void printCart() {
         cart.forEach((product, quantity) -> System.out.println("Cart contains " + quantity + " x " + product));
-        System.out.println("Subtotal = " + getSubtotal());
-        System.out.println("Tax = " + getTax());
-        System.out.println("Total = " + getTotal());
+        System.out.println("Subtotal = " + getSubtotal().setScale(2, RoundingMode.UP));
+        System.out.println("Tax = " + getTax().setScale(2, RoundingMode.UP));
+        System.out.println("Total = " + getTotal().setScale(2, RoundingMode.UP));
+    }
+
+    public static void setTaxRate(BigDecimal taxRate) {
+        ShoppingCart.taxRate = taxRate;
     }
 
 
